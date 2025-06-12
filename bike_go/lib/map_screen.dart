@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'navigationScreen.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -12,16 +13,17 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMixin {
   final String styleUrl =
-      "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png";
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
   final String apiKey = "e745562c-4dac-4ef2-a917-b2a56945e990";
 
   late AnimationController _controller;
   late Animation<double> _animation;
 
+  final LatLng _center = LatLng(3.848, 11.502);
+
   @override
   void initState() {
     super.initState();
-
     _controller = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
@@ -115,26 +117,32 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Bike-Go'),
+        title: const Text('Bike-Go'),
       ),
       body: Stack(
         children: [
           FlutterMap(
             options: MapOptions(
-              center: LatLng(3.848, 11.502),
+              center: _center,
               zoom: 17,
             ),
             nonRotatedChildren: [
               RichAttributionWidget(attributions: [
-                TextSourceAttribution("Stadia Maps",
-                    onTap: () => launchUrl(Uri.parse("https://stadiamaps.com/")),
-                    prependCopyright: true),
-                TextSourceAttribution("OpenMapTiles",
-                    onTap: () => launchUrl(Uri.parse("https://openmaptiles.org/")),
-                    prependCopyright: true),
-                TextSourceAttribution("OpenStreetMap",
-                    onTap: () => launchUrl(Uri.parse("https://www.openstreetmap.org/copyright")),
-                    prependCopyright: true),
+                TextSourceAttribution(
+                  "Stadia Maps",
+                  onTap: () => launchUrl(Uri.parse("https://stadiamaps.com/")),
+                  prependCopyright: true,
+                ),
+                TextSourceAttribution(
+                  "OpenMapTiles",
+                  onTap: () => launchUrl(Uri.parse("https://openmaptiles.org/")),
+                  prependCopyright: true,
+                ),
+                TextSourceAttribution(
+                  "OpenStreetMap",
+                  onTap: () => launchUrl(Uri.parse("https://www.openstreetmap.org/copyright")),
+                  prependCopyright: true,
+                ),
               ])
             ],
             children: [
@@ -159,15 +167,15 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                               content: Text(lieu["description"]),
                               actions: [
                                 TextButton(
-                                  child: Text('Fermer'),
+                                  child: const Text('Fermer'),
                                   onPressed: () => Navigator.pop(context),
-                                )
+                                ),
                               ],
                             ),
                           );
                         },
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -176,12 +184,14 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                                 color: Colors.red,
                                 size: 24,
                               ),
-                              SizedBox(width: 5),
+                              const SizedBox(width: 5),
                               Flexible(
                                 child: Text(
                                   lieu["nom"],
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold, fontSize: 14),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
@@ -192,7 +202,6 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                     );
                   }).toList(),
 
-                  // Moto animée au-dessus du Djeuga Palace
                   Marker(
                     point: LatLng(3.8508, 11.5008),
                     width: 60,
@@ -210,40 +219,49 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
             ],
           ),
 
-          // Bande inférieure animée
           Positioned(
             bottom: 80,
             left: 14,
             right: 14,
             child: ScaleTransition(
               scale: _animation,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                decoration: BoxDecoration(
-                  color: const Color.fromRGBO(255, 187, 0, 1),
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DestinationPage(),
                     ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Icon(Icons.two_wheeler, color: Colors.black),
-                    Text(
-                      "Où allons-nous ?",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 19,
-                        fontWeight: FontWeight.w500,
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: const Color.fromRGBO(255, 187, 0, 1),
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
                       ),
-                    ),
-                    Icon(Icons.arrow_forward_ios, color: Colors.black, size: 18),
-                  ],
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Icon(Icons.two_wheeler, color: Colors.black),
+                      Text(
+                        "Où allons-nous ?",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Icon(Icons.arrow_forward_ios, color: Colors.black, size: 18),
+                    ],
+                  ),
                 ),
               ),
             ),
