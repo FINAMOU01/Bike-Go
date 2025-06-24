@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'user_list.dart';
 
 void main() {
   runApp(const MyApp());
+  runApp(MaterialApp(
+    home: UserList(), // Utilise ton widget ici
+  ));
 }
 
 class MyApp extends StatelessWidget {
