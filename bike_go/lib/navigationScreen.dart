@@ -13,13 +13,13 @@ class _DestinationPageState extends State<DestinationPage> {
   final TextEditingController destinationController = TextEditingController();
 
   final List<Map<String, dynamic>> lieux = [
-    {"nom": "Poste Centrale", "lat": 3.848, "lng": 11.502},
-    {"nom": "Banque SGBC", "lat": 3.8492, "lng": 11.5015},
-    {"nom": "Restaurant La Paix", "lat": 3.8475, "lng": 11.5032},
-    {"nom": "Hôtel Djeuga Palace", "lat": 3.8503, "lng": 11.5008},
-    {"nom": "Boutique Express", "lat": 3.8478, "lng": 11.5003},
-    {"nom": "Pharmacie Centrale", "lat": 3.8489, "lng": 11.504},
-    {"nom": "Arrêt de Bus", "lat": 3.8467, "lng": 11.501},
+    {"nom": "poste centrale", "lat": 3.848, "lng": 11.502},
+    {"nom": "banque SGBC", "lat": 3.8492, "lng": 11.5015},
+    {"nom": "restaurant la paix", "lat": 3.8475, "lng": 11.5032},
+    {"nom": "hôtel djeuga palace", "lat": 3.8503, "lng": 11.5008},
+    {"nom": "boutique express", "lat": 3.8478, "lng": 11.5003},
+    {"nom": "pharmacie centrale", "lat": 3.8489, "lng": 11.504},
+    {"nom": "arrêt de Bus", "lat": 3.8467, "lng": 11.501},
   ];
 
   void rechercherDestination() async {
@@ -36,8 +36,8 @@ class _DestinationPageState extends State<DestinationPage> {
     }
 
     if (lieu != null) {
-       double fixedLatitude = 3.879749;
-       double fixedLongitude = 11.553622;
+       double fixedLatitude = 3.952769;
+       double fixedLongitude = 11.516665;
 
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {

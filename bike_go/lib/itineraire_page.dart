@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
@@ -23,14 +24,20 @@ class ItinerairePage extends StatefulWidget {
   State<ItinerairePage> createState() => _ItinerairePageState();
 }
 
-class _ItinerairePageState extends State<ItinerairePage> {
+class _ItinerairePageState extends State<ItinerairePage> with TickerProviderStateMixin {
   List<LatLng> routePoints = [];
-  LatLng? motoPosition;
   List<LatLng> motoToUserRoute = [];
+  List<LatLng> remainingRoute = [];
+  LatLng? motoPosition;
   double? distance;
   double? duration;
   double? motoToUserDuration;
   int? selectedCategoryIndex;
+  bool showMessageIcon = false;
+  bool isMotoMoving = false;
+
+  late AnimationController _animationController;
+  late Animation<Color?> _buttonColorAnimation;
 
   final List<Map<String, dynamic>> motoCategories = [
     {'name': 'Éco', 'multiplier': 100, 'image': 'assets/images/motorbike.png'},
@@ -43,6 +50,22 @@ class _ItinerairePageState extends State<ItinerairePage> {
   void initState() {
     super.initState();
     fetchMainRoute();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    _buttonColorAnimation = ColorTween(
+      begin: Colors.grey,
+      end: Colors.deepOrangeAccent,
+    ).animate(_animationController);
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> fetchMainRoute() async {
@@ -63,14 +86,17 @@ class _ItinerairePageState extends State<ItinerairePage> {
   Future<void> onCategorySelected(int index) async {
     setState(() {
       selectedCategoryIndex = index;
+      showMessageIcon = false;
     });
 
-    final random = Random();
-    final offsetLat = (random.nextDouble() * 0.009) - 0.001;
-    final offsetLng = (random.nextDouble() * 0.009) - 0.001;
+    _animationController.forward();
 
-    final newMotoLat = widget.currentLatitude + offsetLat;
-    final newMotoLng = widget.currentLongitude + offsetLng;
+    final random = Random();
+    final angle = random.nextDouble() * 2 * pi;
+    final dist = 0.01 + random.nextDouble() * 0.02;
+
+    final newMotoLat = widget.currentLatitude + dist * sin(angle);
+    final newMotoLng = widget.currentLongitude + dist * cos(angle);
     final newMotoPosition = LatLng(newMotoLat, newMotoLng);
 
     final data = await fetchRoute(
@@ -83,7 +109,9 @@ class _ItinerairePageState extends State<ItinerairePage> {
     setState(() {
       motoPosition = newMotoPosition;
       motoToUserRoute = data['points'];
+      remainingRoute = List.from(data['points']);
       motoToUserDuration = data['duration'];
+      showMessageIcon = true;
     });
   }
 
@@ -160,6 +188,79 @@ class _ItinerairePageState extends State<ItinerairePage> {
     return coordinates;
   }
 
+  void startMotoMovement() {
+    int index = 0;
+    isMotoMoving = true;
+    motoPosition = null;
+
+    Timer.periodic(const Duration(milliseconds: 600), (timer) {
+      if (index < motoToUserRoute.length) {
+        setState(() {
+          remainingRoute = motoToUserRoute.sublist(index);
+        });
+        index++;
+      } else {
+        timer.cancel();
+        isMotoMoving = false;
+        showDialog(
+          context: context, 
+          builder: (_) => AlertDialog(
+            title: Text('Moto arrived'),
+            content: Text('Moto arrived at the destination'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text("ok"),),
+            ]
+          ),
+        );
+      }
+    });
+  }
+
+  void showDriverDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Moto en approche"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("👤 Nom du chauffeur: Jean Moto"),
+            Text("📞 Orange: 694 12 34 56"),
+            Text("📞 MTN: 677 98 76 54"),
+            Text("🏍️ Moto: Yamaha - Rouge"),
+            const SizedBox(height: 20),
+            if (motoToUserDuration != null)
+              Text("💬 J'arrive dans ${motoToUserDuration!.toStringAsFixed(1)} minutes"),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              startMotoMovement();
+            },
+            child: const Text("OK"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              setState(() {
+                motoPosition = null;
+                motoToUserRoute.clear();
+                motoToUserDuration = null;
+                showMessageIcon = false;
+              });
+            },
+            child: const Text("Cancel"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bounds = LatLngBounds.fromPoints([
@@ -177,7 +278,7 @@ class _ItinerairePageState extends State<ItinerairePage> {
             child: FlutterMap(
               options: MapOptions(
                 bounds: bounds,
-                boundsOptions: FitBoundsOptions(padding: EdgeInsets.all(40)),
+                boundsOptions: const FitBoundsOptions(padding: EdgeInsets.all(40)),
               ),
               children: [
                 TileLayer(
@@ -194,11 +295,11 @@ class _ItinerairePageState extends State<ItinerairePage> {
                       ),
                     ],
                   ),
-                if (motoToUserRoute.isNotEmpty)
+                if (remainingRoute.isNotEmpty)
                   PolylineLayer(
                     polylines: [
                       Polyline(
-                        points: motoToUserRoute,
+                        points: remainingRoute,
                         strokeWidth: 4.0,
                         color: Colors.orange,
                       ),
@@ -218,26 +319,53 @@ class _ItinerairePageState extends State<ItinerairePage> {
                       height: 60,
                       builder: (context) => const Icon(Icons.location_pin, color: Colors.red, size: 40),
                     ),
-                    if (motoPosition != null)
+                    if (motoPosition != null && !isMotoMoving)
                       Marker(
                         point: motoPosition!,
-                        width: 50,
-                        height: 50,
-                        builder: (context) => const Icon(Icons.motorcycle, color: Colors.black, size: 30),
+                        width: 80,
+                        height: 80,
+                        builder: (context) => Stack(
+                          children: [
+                            const Icon(Icons.motorcycle, color: Colors.black, size: 40),
+                            if (showMessageIcon)
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: showDriverDialog,
+                                  child: const Icon(Icons.message, color: Colors.blue, size: 20),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    if (isMotoMoving && remainingRoute.isNotEmpty)
+                      Marker(
+                        point: remainingRoute.first,
+                        width: 40,
+                        height: 40,
+                        builder: (context) => Container(
+                          width: 20,
+                          height:20,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          )
+                        )
                       ),
                   ],
                 ),
               ],
             ),
           ),
-
+                  
           Expanded(
             flex: 5,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: Colors.white,
-                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+                boxShadow: [const BoxShadow(color: Colors.black12, blurRadius: 10)],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,7 +375,6 @@ class _ItinerairePageState extends State<ItinerairePage> {
                       'Distance: ${distance!.toStringAsFixed(2)} km | Durée: ${duration!.toStringAsFixed(1)} min',
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                     ),
-
                   if (motoToUserDuration != null)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -256,7 +383,6 @@ class _ItinerairePageState extends State<ItinerairePage> {
                         style: TextStyle(color: Colors.orange[800], fontWeight: FontWeight.bold),
                       ),
                     ),
-
                   const SizedBox(height: 16),
                   SizedBox(
                     height: 150,
@@ -307,6 +433,32 @@ class _ItinerairePageState extends State<ItinerairePage> {
                           ),
                         );
                       },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  AnimatedBuilder(
+                    animation: _buttonColorAnimation,
+                    builder: (context, child) {
+                      return ElevatedButton(
+                        onPressed: selectedCategoryIndex != null ? showDriverDialog : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _buttonColorAnimation.value,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        child: child,
+                      );
+                    },
+                    child: const Text(
+                      'COMMANDER',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ],
