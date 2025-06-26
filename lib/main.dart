@@ -5,6 +5,9 @@ import 'screens/landing_page.dart';
 import 'screens/login_page.dart';
 import 'screens/signup_page.dart';
 import 'screens/home_page.dart';
+import 'screens/help_support_page.dart';
+import 'screens/payment_methods_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const BikeGoApp());
@@ -12,6 +15,13 @@ void main() {
 
 class BikeGoApp extends StatelessWidget {
   const BikeGoApp({super.key});
+
+  // Add the missing method to check if onboarding should be shown
+  Future<bool> _shouldShowOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    // Return false if onboarding has been completed before
+    return !(prefs.getBool('onboarding_complete') ?? false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,22 +35,36 @@ class BikeGoApp extends StatelessWidget {
         textTheme: GoogleFonts.interTextTheme(),
         useMaterial3: true,
       ),
-      // Set the landing page as the home screen
-      home: const LandingPage(),
       
-      // Or use named routes
+      home: FutureBuilder<bool>(
+        future: _shouldShowOnboarding(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return  == true ? const OnboardingPage() : const LandingPage();
+        },
+      ),
+      
+      
       routes: {
         '/': (context) => const LandingPage(),
-        '/landing': (context) => const LandingPage(),
+        '/onboarding': (context) => const OnboardingPage(),
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignupPage(),
         '/home': (context) => const HomePage(),
+        '/help': (context) => const HelpSupportPage(),
+        '/payment': (context) => const PaymentMethodsPage(),
       },
     );
   }
 }
 
-// Alternative: If you want to navigate to this page from another page
+class OnboardingPage {
+  const OnboardingPage();
+}
+
+
 class NavigationExample extends StatelessWidget {
   const NavigationExample({super.key});
 
@@ -52,7 +76,7 @@ class NavigationExample extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Method 1: Direct navigation
+            
             ElevatedButton(
               onPressed: () {
                 Navigator.push(

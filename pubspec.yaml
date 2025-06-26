@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
   google_fonts: ^5.1.0
   shared_preferences: ^2.2.0
-  image_picker: ^2.0.0  # Updated to a newer version
+  image_picker: 1.1.2  # Updated to a newer version
   path_provider: ^2.1.1
   provider: ^6.1.1
 
@@ -22,8 +22,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/images/onboarding_map.png
-    - assets/images/onboarding_scan.png
-    - assets/images/onboarding_ride.png
-    - assets/images/onboarding_park.png 
+  
+  
