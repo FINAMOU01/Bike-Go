@@ -237,7 +237,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                   decoration: BoxDecoration(
-                    color: const Color.fromRGBO(255, 187, 0, 1),
+                    color: const Color.fromARGB(255, 0, 255, 13),
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: const [
                       BoxShadow(
@@ -252,7 +252,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                     children: const [
                       Icon(Icons.two_wheeler, color: Colors.black),
                       Text(
-                        "Où allons-nous ?",
+                        "where are you going ?",
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 19,

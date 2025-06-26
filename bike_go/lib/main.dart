@@ -1,82 +1,97 @@
 import 'package:flutter/material.dart';
-// import 'user_list.dart';
-import 'map_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'screens/landing_page.dart';
+import 'screens/login_page.dart';
+import 'screens/signup_page.dart';
+import 'screens/home_page.dart';
+import 'screens/help_support_page.dart';
+// import 'screens/payment_methods_page.dart';
+// import 'screens/forgot_password_page.dart'; // Ajoute-le si nécessaire
+// import 'screens/map_page.dart'; // TA carte !
 
 void main() {
-  runApp(const MyApp());
-  runApp(MaterialApp(
-    home:MapScreen(), // Utilise ton widget ici
-  ));
+  runApp(const BikeGoApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class BikeGoApp extends StatelessWidget {
+  const BikeGoApp({super.key});
 
-  // This widget is the root of your application.
+  Future<bool> _shouldShowOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    return !(prefs.getBool('onboarding_complete') ?? false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Bike Go',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        primarySwatch: Colors.green,
+        primaryColor: const Color(0xFF22C55E),
+        scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+        textTheme: GoogleFonts.interTextTheme(),
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: FutureBuilder<bool>(
+        future: _shouldShowOnboarding(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasData && snapshot.data == true) {
+            return const OnboardingPage();
+          } else {
+            return const LandingPage();
+          }
+        },
+      ),
+      routes: {
+        '/landing': (context) => const LandingPage(),
+        '/login': (context) => const LoginPage(),
+        '/signup': (context) => const SignupPage(),
+        '/home': (context) => const HomePage(),
+        '/help': (context) => const HelpSupportPage(),
+        // '/payment': (context) => const PaymentMethodsPage(),
+        // '/forgot': (context) => const ForgotPasswordPage(),
+        // '/map': (context) => const MapPage(), // <- TA PAGE DE CARTE
+      },
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      
-      _counter++;
-    });
-  }
+class OnboardingPage extends StatelessWidget {
+  const OnboardingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       appBar: AppBar(
-        
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: const Text('Welcome to Bike Go'),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      body: const Center(
         child: Column(
-          
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
+          children: [
+            Text('Welcome to Bike Go!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            SizedBox(height: 20),
+            Text('Your bike sharing journey starts here'),
+            SizedBox(height: 40),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        onPressed: () async {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('onboarding_complete', true);
+          if (context.mounted) {
+            Navigator.pushReplacementNamed(context, '/landing');
+          }
+        },
+        child: const Icon(Icons.arrow_forward),
+      ),
     );
   }
 }

@@ -20,6 +20,22 @@ class _DestinationPageState extends State<DestinationPage> {
     {"nom": "boutique express", "lat": 3.8478, "lng": 11.5003},
     {"nom": "pharmacie centrale", "lat": 3.8489, "lng": 11.504},
     {"nom": "arrêt de Bus", "lat": 3.8467, "lng": 11.501},
+    {"nom":"olembe","lat":4.289628, "lng":11.658448},
+    {"nom":"olembe stade yaounde","lat":3.848024, "lng":11.502013},
+    {"nom":"olembe pharmacy","lat":3.956843, "lng":11.533337},
+    {"nom":" echengeur olembe","lat":3.955250, "lng":11.531405},
+    {"nom":"dispensaire messasi","lat":3.946190, "lng":11.522083},
+    {"nom":"dispensaire nkozoa","lat":3.974825, "lng":11.543190},
+    {"nom":"marche messasi","lat":3.941813, "lng":11.518187},
+    {"nom":"marche etoudi","lat":3.915551, "lng":11.529189},
+    {"nom":"fokou etoudi","lat":3.916170, "lng":11.522834},
+    {"nom":"emana","lat":3.935129, "lng":11.519041},
+    {"nom":"pont emana","lat":3.932078, "lng":11.519782},
+    {"nom":"fokou emana","lat":3.932375, "lng":11.513890},
+    // {"nom":"","lat": , "lng": },
+    // {"nom":"","lat": , "lng": },
+    // {"nom":"","lat": , "lng": },
+    // {"nom":"","lat": , "lng": },
   ];
 
   void rechercherDestination() async {
