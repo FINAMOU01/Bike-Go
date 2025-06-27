@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'login_page.dart';
 import 'signup_page.dart';
+// import 'about_us.dart';           // Pour Features
+import 'help_support_page.dart'; // Pour How It Works
+import 'payment_methods_page.dart';    // Pour Pricing
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
@@ -44,11 +47,11 @@ class LandingPage extends StatelessWidget {
         actions: isMobile
             ? null
             : [
-                _buildNavItem(context, 'Features'),
+                _buildNavItem(context, 'About Us'),
                 const SizedBox(width: 24),
-                _buildNavItem(context, 'How It Works'),
+                _buildNavItem(context, 'Help'),
                 const SizedBox(width: 24),
-                _buildNavItem(context, 'Pricing'),
+                _buildNavItem(context, 'Payment method'),
                 const SizedBox(width: 24),
                 OutlinedButton(
                   onPressed: () {
@@ -104,6 +107,42 @@ class LandingPage extends StatelessWidget {
     );
   }
 
+  Widget _buildNavItem(BuildContext context, String title) {
+    return GestureDetector(
+      onTap: () {
+        Widget? page;
+        switch (title) {
+          case 'About Us':
+            // page = const AboutUs();
+            break;
+          case 'Help':
+            page = const HelpSupportPage();
+            break;
+          case 'Payment method':
+            page = const PaymentMethodsPage();
+            break;
+          default:
+            page = null;
+        }
+
+        if (page != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => page!),
+          );
+        }
+      },
+      child: Text(
+        title,
+        style: const TextStyle(
+          color: Color(0xFF4CAF50),
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+      ),
+    );
+  }
+
   Widget _buildDrawer(BuildContext context) {
     return Drawer(
       child: ListView(
@@ -116,20 +155,32 @@ class LandingPage extends StatelessWidget {
               style: TextStyle(color: Colors.white, fontSize: 24),
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.featured_play_list),
-            title: const Text('Features'),
-            onTap: () => Navigator.pop(context),
-          ),
+          // ListTile(
+          //   leading: const Icon(Icons.featured_play_list),
+          //   title: const Text('About Us'),
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //   //   Navigator.push(context,
+          //   //       // MaterialPageRoute(builder: (_) => const AboutUs()));
+          //   // },
+          // ),
           ListTile(
             leading: const Icon(Icons.info_outline),
-            title: const Text('How It Works'),
-            onTap: () => Navigator.pop(context),
+            title: const Text('Help'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const HelpSupportPage()));
+            },
           ),
           ListTile(
             leading: const Icon(Icons.attach_money),
-            title: const Text('Pricing'),
-            onTap: () => Navigator.pop(context),
+            title: const Text('Payment method'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const PaymentMethodsPage()));
+            },
           ),
           ListTile(
             leading: const Icon(Icons.login),
@@ -285,31 +336,5 @@ class LandingPage extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, String title) {
-    return TextButton(
-      onPressed: title == 'Login'
-          ? () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginPage()),
-              );
-            }
-          : title == 'Sign Up'
-              ? () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SignupPage()),
-                  );
-                }
-              : () {},
-      child: Text(
-        title,
-        style: GoogleFonts.poppins(
-          fontSize: 16,
-          color: const Color(0xFF6B7280),
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-}
+
+ }
