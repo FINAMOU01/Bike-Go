@@ -1,11 +1,17 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
 from flask import Flask, jsonify, request
+import os
+import json
+
 
 app = Flask(__name__)
 
 # Initialiser Firebase
-cred = credentials.Certificate('bike-go-82d82-firebase-adminsdk-fbsvc-b0c4bebb69.json')
+
+firebase_credentials = json.loads(os.environ['GOOGLE_CREDENTIALS'])
+cred = credentials.Certificate(firebase_credentials)
+
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
