@@ -9,7 +9,10 @@ app = Flask(__name__)
 
 # Initialiser Firebase
 
-firebase_credentials = json.loads(os.environ['GOOGLE_CREDENTIALS'])
+raw_json = os.environ['GOOGLE_CREDENTIALS'].replace('\r\n', '').replace('\n', '')
+
+# Maintenant tu peux parser
+firebase_credentials = json.loads(raw_json)
 cred = credentials.Certificate(firebase_credentials)
 
 firebase_admin.initialize_app(cred)
