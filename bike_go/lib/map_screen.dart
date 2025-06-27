@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'navigationScreen.dart';
+import 'package:bike_go/screens/profile_page.dart'; 
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -117,8 +118,21 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bike-Go'),
-      ),
+  title: const Text('Bike-Go'),
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.person),
+      tooltip: 'Profil',
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfilePage()),
+        );
+      },
+    ),
+  ],
+),
+
       body: Stack(
         children: [
           FlutterMap(

@@ -9,7 +9,7 @@ import 'screens/home_page.dart';
 import 'screens/help_support_page.dart';
 // import 'screens/payment_methods_page.dart';
 // import 'screens/forgot_password_page.dart'; // Ajoute-le si nécessaire
-// import 'screens/map_page.dart'; // TA carte !
+ import '/map_screen.dart'; 
 
 void main() {
   runApp(const BikeGoApp());
@@ -54,9 +54,7 @@ class BikeGoApp extends StatelessWidget {
         '/signup': (context) => const SignupPage(),
         '/home': (context) => const HomePage(),
         '/help': (context) => const HelpSupportPage(),
-        // '/payment': (context) => const PaymentMethodsPage(),
-        // '/forgot': (context) => const ForgotPasswordPage(),
-        // '/map': (context) => const MapPage(), // <- TA PAGE DE CARTE
+        '/map': (context) => const MapScreen(),  
       },
     );
   }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/map_screen.dart';
+import '/api_service.dart'; 
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -12,8 +15,8 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _rememberMe = false;
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -21,6 +24,49 @@ class _LoginPageState extends State<LoginPage> {
     _passwordController.dispose();
     super.dispose();
   }
+
+Future<void> _handleLogin() async {
+  final email = _emailController.text.trim();
+  final password = _passwordController.text.trim();
+
+  if (email.isEmpty || password.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please fill all fields')),
+    );
+    return;
+  }
+
+  setState(() => _isLoading = true);
+
+  try {
+    final api = ApiService();
+    final result = await api.loginUser(email, password);
+
+    if (result['success']) {
+      // 🔐 Stocker les données du user
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_id', result['user_id']);
+      await prefs.setString('user_email', email);
+      await prefs.setString('user_name', result['user_name'] ?? ''); // Si dispo
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MapScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'] ?? 'Login failed')),
+      );
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error: $e')),
+    );
+  } finally {
+    setState(() => _isLoading = false);
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +89,6 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Logo and app name
                   Center(
                     child: Column(
                       children: [
@@ -72,10 +117,7 @@ class _LoginPageState extends State<LoginPage> {
                       ],
                     ),
                   ),
-                  
                   const SizedBox(height: 48),
-                  
-                  // Welcome text
                   Text(
                     'Welcome back',
                     style: GoogleFonts.inter(
@@ -84,9 +126,7 @@ class _LoginPageState extends State<LoginPage> {
                       color: const Color(0xFF1F2937),
                     ),
                   ),
-                  
                   const SizedBox(height: 8),
-                  
                   Text(
                     'Please enter your details to sign in',
                     style: GoogleFonts.inter(
@@ -94,10 +134,7 @@ class _LoginPageState extends State<LoginPage> {
                       color: const Color(0xFF6B7280),
                     ),
                   ),
-                  
                   const SizedBox(height: 32),
-                  
-                  // Email field
                   Text(
                     'Email',
                     style: GoogleFonts.inter(
@@ -112,30 +149,17 @@ class _LoginPageState extends State<LoginPage> {
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       hintText: 'Enter your email',
-                      hintStyle: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF),
-                      ),
+                      hintStyle: GoogleFonts.inter(color: const Color(0xFF9CA3AF)),
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Color(0xFF22C55E), width: 2),
-                      ),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                     ),
                   ),
-                  
                   const SizedBox(height: 24),
-                  
-                  // Password field
                   Text(
                     'Password',
                     style: GoogleFonts.inter(
@@ -150,56 +174,31 @@ class _LoginPageState extends State<LoginPage> {
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       hintText: 'Enter your password',
-                      hintStyle: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF),
-                      ),
+                      hintStyle: GoogleFonts.inter(color: const Color(0xFF9CA3AF)),
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Color(0xFF22C55E), width: 2),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword ? Icons.visibility_off : Icons.visibility,
                           color: const Color(0xFF6B7280),
                         ),
                         onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
+                          setState(() => _obscurePassword = !_obscurePassword);
                         },
                       ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                     ),
                   ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  
-                  
                   const SizedBox(height: 32),
-                  
-                  // Sign in button
                   SizedBox(
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: () {
-                       Navigator.pushReplacement(
-                       context,
-                       MaterialPageRoute(builder: (context) => const MapScreen()),
-                       );
-                      },
-
+                      onPressed: _isLoading ? null : _handleLogin,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF22C55E),
                         shape: RoundedRectangleBorder(
@@ -208,24 +207,19 @@ class _LoginPageState extends State<LoginPage> {
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         elevation: 0,
                       ),
-                      child: Text(
-                        'Login',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                              'Login',
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
                   ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  
-                  
                   const SizedBox(height: 32),
-                  
-                  // Sign up link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -265,4 +259,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
